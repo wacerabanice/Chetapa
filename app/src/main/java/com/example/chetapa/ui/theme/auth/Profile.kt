@@ -1,6 +1,7 @@
 package com.example.chetapa.ui.theme.auth
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
@@ -19,31 +21,30 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.chetapa.data.Resource
-import com.example.chetapa.navigation.ROUTE_ABOUT
 import com.example.chetapa.navigation.ROUTE_HOME
 import com.example.chetapa.navigation.ROUTE_LOGIN
+import com.example.chetapa.navigation.ROUTE_PROFILE
 import com.example.chetapa.navigation.ROUTE_SIGNUP
 import com.example.chetapa.ui.theme.home.spacing
 import com.example.chetapa.ui.theme.ChetapaTheme
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(viewModel: AuthViewModel?, navController: NavController) {
+fun ProfileScreen(viewModel: AuthViewModel?, navController: NavHostController) {
+    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+    var phonenumber by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    val loginFlow = viewModel?.loginFlow?.collectAsState()
-
+    val registerFlow = viewModel?.registerFlow?.collectAsState()
 
     ConstraintLayout(
         modifier = Modifier.fillMaxSize()
     ) {
-
-        val (refHeader, refEmail, refPassword, refButtonLogin, refTextSignup, refButtonSignup,
+        val (refHeader, refName, refEmail, refPassword, refPhonenumber, refButtonSignup, refTextSignup,
             refLoader) = createRefs()
         val spacing = MaterialTheme.spacing
 
@@ -60,18 +61,59 @@ fun LoginScreen(viewModel: AuthViewModel?, navController: NavController) {
             AuthHeader()
         }
 
+        TextField(
+            value = name,
+            onValueChange = {
+                name = it
+            },
+            label = {
+                Text(text = "name" )
+            },
+            modifier = Modifier.constrainAs(refName) {
+                top.linkTo(refHeader.bottom, spacing.extraLarge)
+                start.linkTo(parent.start, spacing.large)
+                end.linkTo(parent.end, spacing.large)
+                width = Dimension.fillToConstraints
+            },
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.None,
+                autoCorrect = false,
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next
+            )
+        )
+        TextField(
+            value = phonenumber,
+            onValueChange = {
+                phonenumber = it
+            },
+            label = {
+                Text(text = "phonemumber" )
+            },
+            modifier = Modifier.constrainAs(refPhonenumber) {
+                top.linkTo(refName.bottom, spacing.medium)
+                start.linkTo(parent.start, spacing.large)
+                end.linkTo(parent.end, spacing.large)
+                width = Dimension.fillToConstraints
+            },
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.None,
+                autoCorrect = false,
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next
+            )
+        )
 
         TextField(
             value = email,
             onValueChange = {
                 email = it
             },
-
             label = {
-                Text(text = "Enter Email")
+                Text(text = "email" )
             },
             modifier = Modifier.constrainAs(refEmail) {
-                top.linkTo(refHeader.bottom, spacing.extraLarge)
+                top.linkTo(refPhonenumber.bottom, spacing.medium)
                 start.linkTo(parent.start, spacing.large)
                 end.linkTo(parent.end, spacing.large)
                 width = Dimension.fillToConstraints
@@ -90,15 +132,15 @@ fun LoginScreen(viewModel: AuthViewModel?, navController: NavController) {
                 password = it
             },
             label = {
-                Text(text = "Enter Password")
+                Text(text = "Password" )
             },
-            visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.constrainAs(refPassword) {
                 top.linkTo(refEmail.bottom, spacing.medium)
                 start.linkTo(parent.start, spacing.large)
                 end.linkTo(parent.end, spacing.large)
                 width = Dimension.fillToConstraints
             },
+            visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.None,
                 autoCorrect = false,
@@ -109,32 +151,16 @@ fun LoginScreen(viewModel: AuthViewModel?, navController: NavController) {
 
         Button(
             onClick = {
-                viewModel?.login(email, password)
+                viewModel?.register(name, email, password)
             },
-            modifier = Modifier.constrainAs(refButtonLogin) {
+            modifier = Modifier.constrainAs(refButtonSignup) {
                 top.linkTo(refPassword.bottom, spacing.large)
                 start.linkTo(parent.start, spacing.extraLarge)
                 end.linkTo(parent.end, spacing.extraLarge)
                 width = Dimension.fillToConstraints
             }
         ) {
-            Text(text =  "Log In", style = MaterialTheme.typography.titleMedium)
-        }
-        Button(
-            onClick = {
-                navController.navigate(ROUTE_SIGNUP) {
-                    popUpTo(ROUTE_LOGIN) { inclusive = true }
-                }
-            }
-                    ,
-            modifier = Modifier.constrainAs(refButtonSignup) {
-                top.linkTo(refButtonLogin.bottom, spacing.large)
-                start.linkTo(parent.start, spacing.extraLarge)
-                end.linkTo(parent.end, spacing.extraLarge)
-                width = Dimension.fillToConstraints
-            }
-        ) {
-            Text(text =  "Sign Up", style = MaterialTheme.typography.titleMedium)
+            Text(text = "Create Profile")
         }
 
 
@@ -146,20 +172,17 @@ fun LoginScreen(viewModel: AuthViewModel?, navController: NavController) {
                     end.linkTo(parent.end, spacing.extraLarge)
                 }
                 .clickable {
-                    navController.navigate(ROUTE_ABOUT) {
-                        popUpTo(ROUTE_LOGIN) { inclusive = true }
+                    navController.navigate(ROUTE_LOGIN) {
+                        popUpTo(ROUTE_PROFILE) { inclusive = true }
                     }
                 },
-            text = "About Chetapa",
+            text = "Already Have an Account",
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface
         )
 
-
-
-
-        loginFlow?.value?.let {
+        registerFlow?.value?.let {
             when (it) {
                 is Resource.Failure -> {
                     val context = LocalContext.current
@@ -176,23 +199,28 @@ fun LoginScreen(viewModel: AuthViewModel?, navController: NavController) {
                 is Resource.Success -> {
                     LaunchedEffect(Unit) {
                         navController.navigate(ROUTE_HOME) {
-                            popUpTo(ROUTE_LOGIN) { inclusive = true }
+                            popUpTo(ROUTE_PROFILE) { inclusive = true }
                         }
                     }
                 }
             }
         }
+
     }
 }
-
-
 
 @Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO)
 @Composable
-fun LoginScreenPreviewLight() {
+fun ProfileScreenPreviewLight() {
     ChetapaTheme {
-        LoginScreen(null, rememberNavController())
+        SignupScreen(null, rememberNavController())
     }
 }
 
-
+@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@Composable
+fun ProfileScreenPreviewDark() {
+    ChetapaTheme {
+        SignupScreen(null, rememberNavController())
+    }
+}

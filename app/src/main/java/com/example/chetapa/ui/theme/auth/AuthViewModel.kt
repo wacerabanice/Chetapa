@@ -22,6 +22,9 @@ class AuthViewModel @Inject constructor(
     private val _signupFlow = MutableStateFlow<Resource<FirebaseUser>?>(null)
     val signupFlow: StateFlow<Resource<FirebaseUser>?> = _signupFlow
 
+    private val _registerFlow = MutableStateFlow<Resource<FirebaseUser>?>(null)
+    val registerFlow: StateFlow<Resource<FirebaseUser>?> = _registerFlow
+
     val currentUser: FirebaseUser?
         get() = repository.currentUser
 
@@ -43,10 +46,17 @@ class AuthViewModel @Inject constructor(
         _signupFlow.value = result
     }
 
+    fun register(name: String, email: String, password: String) = viewModelScope.launch {
+        _registerFlow.value = Resource.Loading
+        val result = repository.signup(name, email, password)
+        _registerFlow.value = result
+    }
+
     fun logout() {
         repository.logout()
         _loginFlow.value = null
         _signupFlow.value = null
+        _registerFlow.value=null
     }
 }
 

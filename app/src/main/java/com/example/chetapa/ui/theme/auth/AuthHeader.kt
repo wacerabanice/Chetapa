@@ -28,7 +28,7 @@ fun AuthHeader() {
         Image(
             modifier = Modifier
                 .size(128.dp, 128.dp),
-            painter = painterResource(id = R.drawable.chipailogo2),
+            painter = painterResource(id = R.drawable.chatapalogo),
             contentDescription = stringResource(id = R.string.app_name)
         )
 
